@@ -17,6 +17,9 @@ I used the racadm method for years, and I find it slow and sometimes it does not
 Then I used ipmitool and it did great, but had text output I needed to parse.
 
 So I first wrote the same tool with the same text output and it worked.
+The original C code can be found here: [ipmitool 1.8.19](https://github.com/ipmitool/ipmitool/blob/IPMITOOL_1_8_19/lib/ipmi_dcmi.c#L1398-L1454)
+
+Special thanks to the library [ipmi-rs](https://github.com/datdenkikniet/ipmi-rs) that made this possible.
 
 ## Example (text)
 
