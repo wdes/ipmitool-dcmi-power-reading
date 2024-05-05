@@ -1,4 +1,4 @@
-use clap::{Args, Parser};
+use clap::{Args, Parser, ValueEnum};
 use ipmi_rs::{
     connection::{
         rmcp::{Active, Rmcp},
@@ -18,9 +18,15 @@ pub enum IpmiConnectionEnum {
 }
 
 #[derive(Parser)]
-pub struct CliOpts {
+struct CliOpts {
     #[clap(flatten)]
     pub common: CommonOpts,
+}
+
+#[derive(ValueEnum, Clone, Copy)]
+pub enum OutputFormats {
+    Text,
+    Json,
 }
 
 #[derive(Args)]
@@ -31,6 +37,9 @@ pub struct CommonOpts {
     /// How many milliseconds to wait before timing out while waiting for a response
     #[clap(default_value = "2000", long)]
     timeout_ms: u64,
+    /// The format to output
+    #[clap(default_value = "text", value_enum, long)]
+    format: OutputFormats,
 }
 
 fn error<T>(val: T) -> std::io::Error
@@ -41,6 +50,9 @@ where
 }
 
 impl CommonOpts {
+    pub fn get_format(&self) -> OutputFormats {
+        self.format
+    }
     pub fn get_connection(&self) -> std::io::Result<IpmiConnectionEnum> {
         let timeout = Duration::from_millis(self.timeout_ms);
 

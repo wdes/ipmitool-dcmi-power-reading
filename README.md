@@ -21,19 +21,40 @@ The original C code can be found here: [ipmitool 1.8.19](https://github.com/ipmi
 
 Special thanks to the library [ipmi-rs](https://github.com/datdenkikniet/ipmi-rs) that made this possible.
 
+## Use
+
+```text
+A tool to fetch the power reading with ipmi dcmi
+
+Usage: ipmitool-dcmi-power-reading [OPTIONS]
+
+Options:
+  -c, --connection-uri <CONNECTION_URI>
+          The connection URI to use [default: file:///dev/ipmi0]
+      --timeout-ms <TIMEOUT_MS>
+          How many milliseconds to wait before timing out while waiting for a response [default: 2000]
+      --format <FORMAT>
+          The format to output [default: text] [possible values: text, json]
+  -h, --help
+          Print help
+  -V, --version
+          Print version
+```
+
 ## Example (text)
 
 ```text
-Instantaneous power reading              : 214      Watts
+Instantaneous power reading              : 212      Watts
 Minimum during sampling period           : 2        Watts
 Maximum during sampling period           : 468      Watts
 Average power reading over sample period : 184      Watts
-IPMI timestamp                           : 2024-05-05 13:06:44 UTC
+IPMI timestamp                           : 2024-05-05 14:17:17 UTC
 Sampling period                          : 1000 Milliseconds
 Power reading state is                   : activated
 ```
 
-## TODO
+## Example (json)
 
-- [ ] Document options on the README
-- [ ] Add JSON support
+```json
+{"grp_id":220,"curr_pwr":209,"min_sample":2,"max_sample":468,"avg_pwr":184,"time_stamp":1714918638,"sample":1000,"state":64}
+```

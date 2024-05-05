@@ -3,12 +3,17 @@ use std::io::Error;
 use binary_layout::binary_layout;
 use chrono::{TimeZone, Utc};
 use clap::Parser;
-use common::{CommonOpts, IpmiConnectionEnum};
+use common::{CommonOpts, IpmiConnectionEnum, OutputFormats};
 use ipmi_rs::connection::{IpmiConnection, LogicalUnit, Message, NetFn, Request};
+use serde::{Deserialize, Serialize};
 
 mod common;
 
 #[derive(Parser)]
+#[clap(name = "ipmitool-dcmi-power-reading")]
+#[clap(about = "A tool to fetch the power reading with ipmi dcmi")]
+#[clap(author = "William Desportes <williamdes@wdes.fr>")]
+#[clap(version = "1.0.0")]
 struct Command {
     #[clap(flatten)]
     common: CommonOpts,
@@ -34,7 +39,9 @@ fn get_message() -> std::io::Result<Message> {
     ))
 }
 
+#[derive(Serialize, Deserialize)]
 pub struct PowerConsumption {
+    #[allow(dead_code)]
     grp_id: u8, /* first byte: Group Extension ID */
     curr_pwr: u16,
     min_sample: u16,
@@ -134,6 +141,10 @@ pub fn ipmi_dcmi_pwr_format_text(pwr: PowerConsumption) {
     println!("");
 }
 
+pub fn ipmi_dcmi_pwr_format_json(pwr: PowerConsumption) {
+    print!("{}", serde_json::to_string(&pwr).unwrap());
+}
+
 fn main() -> std::io::Result<()> {
     pretty_env_logger::formatted_builder()
         .parse_filters(&std::env::var("RUST_LOG").unwrap_or("info".to_string()))
@@ -142,7 +153,10 @@ fn main() -> std::io::Result<()> {
     let command = Command::parse();
     let ipmi = command.common.get_connection()?;
     match ipmi_dcmi_pwr_rd(ipmi) {
-        Ok(data) => Ok(ipmi_dcmi_pwr_format_text(data)),
+        Ok(data) => match command.common.get_format() {
+            OutputFormats::Json => Ok(ipmi_dcmi_pwr_format_json(data)),
+            OutputFormats::Text => Ok(ipmi_dcmi_pwr_format_text(data)),
+        },
         Err(err) => Err(err),
     }
 }
