@@ -9,7 +9,7 @@ use ipmi_rs::connection::{IpmiConnection, LogicalUnit, Message, NetFn, Request};
 mod common;
 
 #[derive(Parser)]
-pub struct Command {
+struct Command {
     #[clap(flatten)]
     common: CommonOpts,
 }
@@ -34,8 +34,19 @@ fn get_message() -> std::io::Result<Message> {
     ))
 }
 
+pub struct PowerConsumption {
+    grp_id: u8, /* first byte: Group Extension ID */
+    curr_pwr: u16,
+    min_sample: u16,
+    max_sample: u16,
+    avg_pwr: u16,
+    time_stamp: u32, /* time since epoch */
+    sample: u32,
+    state: u8,
+}
+
 // See: https://github.com/ipmitool/ipmitool/blob/IPMITOOL_1_8_19/lib/ipmi_dcmi.c#L1398-L1454
-fn ipmi_dcmi_pwr_rd(ipmi: IpmiConnectionEnum) -> Result<(), Error> {
+pub fn ipmi_dcmi_pwr_rd(ipmi: IpmiConnectionEnum) -> Result<PowerConsumption, Error> {
     let message = get_message()?;
 
     let mut request: Request = Request::new(message, LogicalUnit::Zero);
@@ -63,34 +74,46 @@ fn ipmi_dcmi_pwr_rd(ipmi: IpmiConnectionEnum) -> Result<(), Error> {
         state: u8,
     });
     let view = power_data::View::new(response_data);
-    //let grp_id: u8 = view.grp_id().read();
+    let grp_id: u8 = view.grp_id().read();
     let curr_pwr: u16 = view.curr_pwr().read();
     let min_sample: u16 = view.min_sample().read();
     let max_sample: u16 = view.max_sample().read();
     let avg_pwr: u16 = view.avg_pwr().read();
     let time_stamp: u32 = view.time_stamp().read();
-    let date_time = Utc.timestamp_opt(time_stamp as i64, 0).unwrap();
     let sample: u32 = view.sample().read();
     let state: u8 = view.state().read();
+    Ok(PowerConsumption {
+        grp_id,
+        curr_pwr,
+        min_sample,
+        max_sample,
+        avg_pwr,
+        time_stamp,
+        sample,
+        state,
+    })
+}
 
+pub fn ipmi_dcmi_pwr_format_text(pwr: PowerConsumption) {
+    let date_time = Utc.timestamp_opt(pwr.time_stamp as i64, 0).unwrap();
     //println!("grp_id: {}:{:02X?}", grp_id, grp_id);
     println!("");
     println!(
         "    Instantaneous power reading              : {:<8} Watts",
-        curr_pwr
+        pwr.curr_pwr
     );
     println!(
         "    Minimum during sampling period           : {:<8} Watts",
-        min_sample
+        pwr.min_sample
     );
     println!(
         "    Maximum during sampling period           : {:<8} Watts",
-        max_sample
+        pwr.max_sample
     );
 
     println!(
         "    Average power reading over sample period : {:<8} Watts",
-        avg_pwr
+        pwr.avg_pwr
     );
     println!(
         "    IPMI timestamp                           : {}",
@@ -98,18 +121,17 @@ fn ipmi_dcmi_pwr_rd(ipmi: IpmiConnectionEnum) -> Result<(), Error> {
     );
     println!(
         "    Sampling period                          : {} Milliseconds",
-        sample
+        pwr.sample
     );
     println!(
         "    Power reading state is                   : {}",
-        match state {
+        match pwr.state {
             0x40 => "activated",
             _ => "deactivated",
         }
     );
     println!("");
     println!("");
-    Ok(())
 }
 
 fn main() -> std::io::Result<()> {
@@ -119,5 +141,8 @@ fn main() -> std::io::Result<()> {
 
     let command = Command::parse();
     let ipmi = command.common.get_connection()?;
-    ipmi_dcmi_pwr_rd(ipmi)
+    match ipmi_dcmi_pwr_rd(ipmi) {
+        Ok(data) => Ok(ipmi_dcmi_pwr_format_text(data)),
+        Err(err) => Err(err),
+    }
 }
