@@ -48,6 +48,8 @@ assets = [
     ["target/release/ipmitool-dcmi-power-reading", "usr/bin/ipmitool-dcmi-power-reading", "755"],
     ["README.md", "usr/share/doc/ipmitool-dcmi-power-reading/README", "644"],
 ]
+revision = "1"
+changelog = "debian/changelog"
 
 [dependencies]
 ipmi-rs = "0.2.1"
