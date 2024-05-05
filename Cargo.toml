@@ -45,7 +45,7 @@ depends = "$auto"
 section = "utility"
 priority = "optional"
 assets = [
-    ["target/release/cargo-deb", "usr/bin/ipmitool-dcmi-power-reading", "755"],
+    ["target/release/ipmitool-dcmi-power-reading", "usr/bin/ipmitool-dcmi-power-reading", "755"],
     ["README.md", "usr/share/doc/ipmitool-dcmi-power-reading/README", "644"],
 ]
 
