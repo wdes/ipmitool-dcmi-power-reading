@@ -1,0 +1,44 @@
+[package]
+name = "ipmitool-dcmi-power-reading"
+version = "1.0.0"
+authors = ["William Desportes <williamdes@wdes.fr>"]
+edition = "2021"
+rust-version = "1.76.0"  # MSRV
+description = "The Rust implementation of \"ipmitool dcmi power reading\""
+homepage = "https://github.com/wdes/ipmitool-dcmi-power-reading#readme"
+repository = "https://github.com/wdes/ipmitool-dcmi-power-reading"
+readme = "README.md"
+keywords = ["ipmitool", "dcmi", "power", "watts"]
+categories = ["command-line-utilities"]
+license = "MPL-2.0"
+include = [
+    "/src/**/*.rs",
+    "/Cargo.toml",
+    "/LICENSE",
+]
+
+[badges]
+github = { repository = "ipmitool-dcmi-power-reading", branch = "master" }
+is-it-maintained-issue-resolution = { repository = "ipmitool-dcmi-power-reading" }
+is-it-maintained-open-issues = { repository = "ipmitool-dcmi-power-reading" }
+maintenance = { status = "passively-maintained" }
+
+[[bin]]
+name = "ipmitool-dcmi-power-reading"
+path = "src/main.rs"
+
+[profile.release]
+# See: https://github.com/johnthagen/min-sized-rust
+strip = true  # Automatically strip symbols from the binary.
+opt-level = "z"  # Optimize for size.
+lto = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ipmi-rs = "0.2.1"
+pretty_env_logger = "0.4"
+clap = { version = "4.3", features = [ "derive" ]}
+log = "0.4"
+binary-layout = "4.0.2"
+chrono = "0.4.38"
