@@ -1,5 +1,9 @@
 # ipmitool dcmi power reading
 
+[![dependency status](https://deps.rs/repo/github/wdes/ipmitool-dcmi-power-reading/status.svg)](https://deps.rs/repo/github/wdes/ipmitool-dcmi-power-reading)
+[![Build and test rust code](https://github.com/wdes/ipmitool-dcmi-power-reading/actions/workflows/rust.yml/badge.svg)](https://github.com/wdes/ipmitool-dcmi-power-reading/actions/workflows/rust.yml)
+![maintenance-status](https://img.shields.io/badge/maintenance-passively--maintained-yellowgreen.svg)
+
 ## Why does this tool exist
 
 Because you are asking yourself "how do I get my power consumption numbers" ?

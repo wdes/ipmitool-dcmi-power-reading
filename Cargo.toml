@@ -18,7 +18,7 @@ include = [
 ]
 
 [badges]
-github = { repository = "ipmitool-dcmi-power-reading", branch = "master" }
+github = { repository = "ipmitool-dcmi-power-reading", branch = "main" }
 is-it-maintained-issue-resolution = { repository = "ipmitool-dcmi-power-reading" }
 is-it-maintained-open-issues = { repository = "ipmitool-dcmi-power-reading" }
 maintenance = { status = "passively-maintained" }
@@ -34,6 +34,20 @@ opt-level = "z"  # Optimize for size.
 lto = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.deb]
+maintainer = "William Desportes <williamdes@wdes.fr>"
+copyright = "2024, William Desportes <williamdes@wdes.fr>"
+license-file = ["LICENSE"]
+extended-description = """\
+The Rust implementation of \"ipmitool dcmi power reading\""""
+depends = "$auto"
+section = "utility"
+priority = "optional"
+assets = [
+    ["target/release/cargo-deb", "usr/bin/ipmitool-dcmi-power-reading", "755"],
+    ["README.md", "usr/share/doc/ipmitool-dcmi-power-reading/README", "644"],
+]
 
 [dependencies]
 ipmi-rs = "0.2.1"
