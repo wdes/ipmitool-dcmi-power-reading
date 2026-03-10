@@ -37,7 +37,7 @@ lto = true
 
 [package.metadata.deb]
 maintainer = "William Desportes <williamdes@wdes.fr>"
-copyright = "2024, William Desportes <williamdes@wdes.fr>"
+copyright = "2024-2026, William Desportes <williamdes@wdes.fr>"
 license-file = ["LICENSE"]
 extended-description = """\
 The Rust implementation of \"ipmitool dcmi power reading\""""
