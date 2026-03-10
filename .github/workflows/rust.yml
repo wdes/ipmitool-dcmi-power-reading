@@ -1,47 +1,67 @@
 name: Build and test rust code
 
 on:
-  push:
-  pull_request:
+    workflow_dispatch:
+    pull_request:
+    push:
 
 permissions:
-  contents: read
+    contents: read
+
+env:
+    GRCOV_VERSION: 0.10.5
+    RUST_TOOLCHAIN: stable
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
 
 jobs:
-  build_and_test:
-    runs-on: ubuntu-latest
-    name: Build and test binary
-    steps:
-      - name: Cache cargo registry
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo index
-        uses: actions/cache@v3
-        with:
-          path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
-      - name: Cache cargo build
-        uses: actions/cache@v3
-        with:
-          path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Set up toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: 1.76
-          override: true
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: --release
-      - name: Test
-        uses: actions-rs/cargo@v1
-        with:
-          command: test
-          args: --release
+    build_and_test:
+        runs-on: ubuntu-latest
+        name: Build and test
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+            - name: Set up toolchain
+              uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
+              with:
+                  command: install-rustup
+                  profile: minimal
+                  toolchain: ${{ env.RUST_TOOLCHAIN }}
+                  # LLVM tools is for coverage
+                  components: llvm-tools
+                  default: true
+            - name: Build
+              uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
+              with:
+                  command: cargo build
+                  toolchain: ${{ env.RUST_TOOLCHAIN }}
+                  args: --release
+              env:
+                  CARGO_INCREMENTAL: "0"
+                  RUSTFLAGS: "-Cinstrument-coverage"
+                  RUSTDOCFLAGS: "-Cinstrument-coverage"
+            - name: Test
+              uses: FrancisRussell/ferrous-actions@v0.1.0-beta.2
+              with:
+                  command: cargo test
+                  toolchain: ${{ env.RUST_TOOLCHAIN }}
+                  args: --all-features --no-fail-fast
+              env:
+                  CARGO_INCREMENTAL: "0"
+                  RUSTFLAGS: "-Cinstrument-coverage"
+                  RUSTDOCFLAGS: "-Cinstrument-coverage"
+            - name: Install grcov
+              run: |
+                mkdir -p "${HOME}/.local/bin"
+                curl -sL https://github.com/mozilla/grcov/releases/download/v${{ env.GRCOV_VERSION }}/grcov-x86_64-unknown-linux-gnu.tar.bz2 | tar jxf - -C "${HOME}/.local/bin"
+                echo "$HOME/.local/bin" >> $GITHUB_PATH
+            - name: Run grcov
+              run: grcov . --binary-path target/debug/deps/ -s . -t lcov --branch --ignore-not-existing --ignore '../**' --ignore '/*' -o coverage.lcov
+            - uses: codecov/codecov-action@v5
+              with:
+                  files: ./coverage.lcov
+                  flags: rust
+                  fail_ci_if_error: true # optional (default = false)
+                  token: ${{ secrets.CODECOV_TOKEN }}
