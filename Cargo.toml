@@ -53,7 +53,7 @@ changelog = "debian/changelog"
 
 [dependencies]
 ipmi-rs = "0.2.1"
-pretty_env_logger = "0.4"
+pretty_env_logger = "0.5"
 clap = { version = "4.3", features = [ "derive" ]}
 log = "0.4"
 binary-layout = "4.0.2"
